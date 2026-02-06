@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alarma cada 30 Minutos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #282c34;
+            color: white;
+        }
+        #timer {
+            font-size: 5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #61dafb;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .status {
+            margin-top: 10px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Recordatorio de 30 Minutos</h1>
+    <div id="timer">30:00</div>
+    <button id="btnControl">Iniciar Alarma</button>
+    <p class="status" id="statusMsg">Presiona iniciar para comenzar el ciclo.</p>
+
+    <audio id="alarmaSonido" src="alarma.mp3" preload="auto"></audio>
+
+    <script>
+        let tiempoRestante = 30 * 60; // 30 minutos en segundos
+        let intervalo = null;
+        let activo = false;
+
+        const display = document.getElementById('timer');
+        const btn = document.getElementById('btnControl');
+        const sonido = document.getElementById('alarmaSonido');
+        const statusMsg = document.getElementById('statusMsg');
+
+        function actualizarReloj() {
+            let minutos = Math.floor(tiempoRestante / 60);
+            let segundos = tiempoRestante % 60;
+
+            // Formato 00:00
+            display.textContent = 
+                (minutos < 10 ? "0" : "") + minutos + ":" + 
+                (segundos < 10 ? "0" : "") + segundos;
+
+            if (tiempoRestante <= 0) {
+                tocarAlarma();
+                reiniciarCiclo();
+            } else {
+                tiempoRestante--;
+            }
+        }
+
+        function tocarAlarma() {
+            sonido.play().catch(e => console.log("Error al reproducir: ", e));
+        }
+
+        function reiniciarCiclo() {
+            tiempoRestante = 30 * 60;
+            statusMsg.textContent = "¡Alarma sonando! Reiniciando ciclo de 30 min...";
+        }
+
+        btn.onclick = () => {
+            if (!activo) {
+                // Iniciar
+                intervalo = setInterval(actualizarReloj, 1000);
+                btn.textContent = "Detener";
+                btn.style.backgroundColor = "#f44336";
+                statusMsg.textContent = "Temporizador en marcha.";
+                activo = true;
+                // Truco para permitir sonido en navegadores modernos
+                sonido.play();
+                sonido.pause();
+                sonido.currentTime = 0;
+            } else {
+                // Detener
+                clearInterval(intervalo);
+                btn.textContent = "Iniciar Alarma";
+                btn.style.backgroundColor = "#4CAF50";
+                statusMsg.textContent = "Pausado.";
+                activo = false;
+            }
+        };
+    </script>
+</body>
+</html>
